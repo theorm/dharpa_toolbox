@@ -3,11 +3,15 @@
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"say_hello": "00_core.ipynb",
+         "export_notebooks": "00_core.ipynb",
+         "DisplayItem": "01_modules.ipynb",
          "DharpaModule": "01_modules.ipynb",
-         "FileInputModule": "01_modules.ipynb"}
+         "FileInputModule": "01_modules.ipynb",
+         "DharpaWorkflow": "02_workflows.ipynb"}
 
 modules = ["core.py",
-           "modules.py"]
+           "modules.py",
+           "workflows.py"]
 
 doc_url = "https://DHARPA-Project.github.io/dharpa_toolbox/"
 
