@@ -12,14 +12,10 @@ from .modules import DharpaModule
 #export
 class DharpaWorkflow(HasTraits):
 
-    modules = Dict()
+    modules = List()
 
-    def add_module(self, module_id: str, module: DharpaModule):
-
-        if module_id in self.modules.keys():
-            raise Exception(f"Module with id '{module_id}' already present.")
-
-        self.modules[module_id] = module
+    def add_module(self, module: DharpaModule):
+        self.modules.append(module)
 
     def get_module(self, module_id: str) -> Optional[DharpaModule]:
 
