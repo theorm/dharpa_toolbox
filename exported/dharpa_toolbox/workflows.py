@@ -3,8 +3,9 @@
 __all__ = ['DharpaWorkflow']
 
 # Cell
+from functools import partial
 from typing import Optional
-from traitlets import HasTraits, List, Dict
+from traitlets import HasTraits, List, Dict, Bool, All
 from .modules import DharpaModule
 
 # default_exp workflows
@@ -13,17 +14,105 @@ from .modules import DharpaModule
 class DharpaWorkflow(HasTraits):
 
     modules = List()
+    initialized = Bool(default_value=False)
+    dependencies = Dict()
+    dependencies_reverse = Dict()
+    stale = Bool(default=True)
+    busy = Bool(default_value=False)
+
+    def initialize(self) -> None:
+
+        self.dependencies.clear()
+        self.dependencies_reverse.clear()
+
+        module: DharpaModule
+        for module in self.modules:
+            self.dependencies[module.id] = set()
+            self.dependencies_reverse[module.id] = set()
+
+        for module in self.modules:
+            self._initialize_module(module)
+
+        self.initialized = True
+        self.stale = True
+
+    def _initialize_module(self, module: DharpaModule):
+
+        for input_name, v in module.input_mapping.items():
+
+            module_other_id = v[0]
+            self.dependencies_reverse[module_other_id].add(module.id)
+            self.dependencies[module.id].add(module_other_id)
+            output_name = v[1]
+            module_other: DharpaModule = self.get_module(module_other_id)
+            if not hasattr(module_other.outputs, output_name):
+                raise Exception(f"Can't connect to output '{output_name}' of module '{module_other_id}': no such output value")
+            if module_other_id in self.dependencies_reverse.get(module.id, ()):
+                raise Exception(f"Can't connect module '{module_other_id}' to module '{module.id}': circular dependency")
+
+            module_other.outputs.observe(self._module_output_updated, names=output_name)
+
+        for input_name in module.inputs.trait_names():
+            func = partial(self._module_input_updated, module, input_name)
+            module.inputs.observe(func, names=All)
+
+
+    def _module_input_updated(self, source_module: DharpaModule, source_input_name: str, change):
+
+        print("-------------------")
+        print(f"MODULE INPUT UPDATED: {source_module}")
+        print(f"INPUT NAME: {source_input_name}")
+        # print(change)
+        # print(change.new)
+        print("-------------------")
+        self.stale = True
+        # deps = self.dependencies.get(source_module.id)
+        # print(f"Dependencies: {self.dependencies.get(source_module.id)}")
+        # for d in deps:
+        #     dep_module = self.get_module(d)
+        #     print(dep_module.input_mapping)
+
+    def execute(self):
+
+        print("Executing workflow")
+        print("----------------")
+        print("dependencies:")
+        print(self.dependencies)
+        print("----------------")
+        print("dependencies reverse:")
+        print(self.dependencies_reverse)
+
+
+    def _module_output_updated(self, change):
+
+        print("MODULE OUTPUT UPDATED")
+        print(change)
 
     def add_module(self, module: DharpaModule):
+
+        if self.initialized:
+            raise Exception(f"Can't add module '{module.id}': workflow already initialized")
         self.modules.append(module)
+
+    def add_modules(self, *modules: DharpaModule):
+
+        for module in modules:
+            self.add_module(module)
 
     def get_module(self, module_id: str) -> Optional[DharpaModule]:
 
-        return self.modules.get(module_id, None)
+        result = None
+        for m in self.modules:
+            if m.id == module_id:
+                result = m
+                break
 
+        if result is None:
+            raise Exception(f"Worfklow does not have module with id {module_id}.")
+        return result
 
     def __repr__(self) -> str:
-        return f"DharpaWorkflow(modules={self.modules})"
+        return f"DharpaWorkflow(modules={self.modules} initialized={self.initialized} stale={self.stale})"
 
 
 
