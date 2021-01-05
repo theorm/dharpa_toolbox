@@ -4,20 +4,38 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"say_hello": "00_core.ipynb",
          "export_notebooks": "00_core.ipynb",
-         "DisplayItem": "01_modules.ipynb",
-         "DharpaModule": "01_modules.ipynb",
-         "EmptyObject": "01_modules.ipynb",
-         "DataDisplayModule": "01_modules.ipynb",
-         "InputFilesModule": "01_modules.ipynb",
-         "DharpaInputWidget": "01_modules.ipynb",
-         "DharpaOutputWidget": "01_modules.ipynb",
-         "InputFilesWidget": "01_modules.ipynb",
-         "DataDisplayWidget": "01_modules.ipynb",
-         "DharpaWorkflow": "02_workflows.ipynb"}
+         "get_auto_module_id": "01_modules_core.ipynb",
+         "ModuleInputValues": "01_modules_core.ipynb",
+         "ModuleOutputValues": "01_modules_core.ipynb",
+         "ModuleState": "01_modules_core.ipynb",
+         "DharpaModule": "01_modules_core.ipynb",
+         "EmptyObject": "01_modules_core.ipynb",
+         "DataSource": "02_data_sources.ipynb",
+         "WidgetSource": "02_data_sources.ipynb",
+         "InputFilesWidget": "02_data_sources.ipynb",
+         "DataTarget": "03_data_targets.ipynb",
+         "WidgetTarget": "03_data_targets.ipynb",
+         "FileContentWidget": "03_data_targets.ipynb",
+         "DharpaWorkflow": "05_workflows.ipynb",
+         "modules_to_load": "05_workflows.ipynb",
+         "ALL_MODULE_CLASSES": "05_workflows.ipynb",
+         "DharpaFile": "10_module_subclasses.ipynb",
+         "DharpaFiles": "10_module_subclasses.ipynb",
+         "FilesCollectionModule": "10_module_subclasses.ipynb",
+         "load_modules": "99_utils.ipynb",
+         "get_all_subclasses": "99_utils.ipynb",
+         "get_subclass_map": "99_utils.ipynb",
+         "get_camel_case_from_class": "99_utils.ipynb",
+         "get_module_name_from_class": "99_utils.ipynb",
+         "log": "99_utils.ipynb"}
 
 modules = ["core.py",
-           "modules.py",
-           "workflows.py"]
+           "modules/core.py",
+           "sources/core.py",
+           "targets/core.py",
+           "workflows.py",
+           "modules/files.py",
+           "utils.py"]
 
 doc_url = "https://DHARPA-Project.github.io/dharpa_toolbox/"
 
