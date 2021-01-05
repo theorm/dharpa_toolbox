@@ -192,12 +192,29 @@ class DharpaWorkflow(DharpaModule):
 
         return inputs
 
+    def _output_udpated(self, output_name: str, change):
+
+        print("OUTPUT_UPDATED")
+        print(f"trait: {output_name}")
+        print(change)
+
     def _create_outputs(self, **config) -> ModuleOutputValues:
 
-        class Dummy(ModuleOutputValues):
-            pass
+        outputs = ModuleOutputValues()
 
-        return Dummy()
+        traits = {}
+
+        for module_name, module in self.modules.items():
+
+            for output_name in module.outputs.trait_names():
+                trait = module.outputs.traits().get(output_name)
+                output_trait_name = f"{module_name}__{output_name}"
+                traits[output_trait_name] = copy.deepcopy(trait)
+                update_func = partial(self._output_udpated, output_trait_name)
+                module.outputs.observe(update_func, names=output_name)
+
+        outputs.add_traits(**traits)
+        return outputs
 
     @property
     def modules(self) -> typing.Mapping[str, DharpaModule]:
