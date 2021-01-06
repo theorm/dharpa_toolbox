@@ -27,6 +27,7 @@ index = {"say_hello": "00_core.ipynb",
          "get_subclass_map": "99_utils.ipynb",
          "get_camel_case_from_class": "99_utils.ipynb",
          "get_module_name_from_class": "99_utils.ipynb",
+         "graph_to_image": "99_utils.ipynb",
          "log": "99_utils.ipynb"}
 
 modules = ["core.py",

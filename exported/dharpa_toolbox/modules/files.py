@@ -106,7 +106,7 @@ class FilesCollectionModule(DharpaModule):
     def _create_outputs(self, **config) -> ModuleOutputValues:
 
         class FilesCollectionValueOutput(ModuleOutputValues):
-            files = traitlets.Instance(klass=DharpaFiles, allow_none=True)
+            file_set = traitlets.Instance(klass=DharpaFiles, allow_none=True)
 
         return FilesCollectionValueOutput()
 

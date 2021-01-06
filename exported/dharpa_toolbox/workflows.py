@@ -9,8 +9,6 @@ import copy
 from functools import partial
 from typing import Set, Mapping
 import typing
-from asciinet import graph_to_ascii
-import traitlets
 from .modules.core import DharpaModule, ModuleInputValues, ModuleOutputValues
 
 from .utils import get_subclass_map, get_module_name_from_class
@@ -64,6 +62,10 @@ class DharpaWorkflow(DharpaModule):
 
         no_modules_yet = len(self._module_details) == 0
 
+        # TODO: re-use already existing modules
+        self._module_details.clear()
+        self._workflow_inputs = {}
+
         module_ids = set()
 
         for m in modules:
@@ -106,8 +108,6 @@ class DharpaWorkflow(DharpaModule):
 
             module_ids.add(module_id)
 
-            self._workflow_inputs = {}
-
             full_input_map = {}
             for name in module_obj.inputs.trait_names():
                 mapped_input = module_input_map.get(name, None)
@@ -146,15 +146,15 @@ class DharpaWorkflow(DharpaModule):
 
             module_obj = module_details["module"]
             for inp in module_obj.inputs.trait_names():
-                self._dependency_graph.add_edge(f"{module_id}.input: {inp}", module_obj)
+                self._dependency_graph.add_edge(f"{module_id}.input '{inp}'", module_obj)
             for out in module_obj.outputs.trait_names():
-                self._dependency_graph.add_edge(module_obj, f"{module_id}.output: {out}")
+                self._dependency_graph.add_edge(module_obj, f"{module_id}.output '{out}'")
 
             for input_name, connected_output in module_details["input_map"].items():
                 if connected_output[0] == "__workflow__":
-                    self._dependency_graph.add_edge("__workflow_input__", f"{module_id}.input: {input_name}")
+                    self._dependency_graph.add_edge("__user_input__", f"{module_id}.input '{input_name}'")
                 else:
-                    self._dependency_graph.add_edge(f"{connected_output[0]}.output: {connected_output[1]}", f"{module_id}.input: {input_name}")
+                    self._dependency_graph.add_edge(f"{connected_output[0]}.output '{connected_output[1]}", f"{module_id}.input '{input_name}'")
 
         return config
 
@@ -176,7 +176,13 @@ class DharpaWorkflow(DharpaModule):
 
     def _create_inputs(self, **config) -> ModuleInputValues:
 
-        inputs = ModuleInputValues()
+        print("CREATE WORKFLOW INPUTS")
+
+        class WorkflowModelInputValues(ModuleInputValues):
+            pass
+
+        # inputs = ModuleInputValues()
+        inputs = WorkflowModelInputValues()
 
         traits = {}
 

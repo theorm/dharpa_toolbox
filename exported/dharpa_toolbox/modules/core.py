@@ -91,6 +91,7 @@ class DharpaModule(metaclass=ABCMeta):
         self._input_current = {}
 
         if self._state is None:
+            print(self)
             self._state: ModuleState = ModuleState(config=processed_config, inputs=self._create_inputs(**processed_config), outputs=self._create_outputs(**processed_config), stale=True, busy=False)
         else:
             self._state.inputs.unobserve_all()
@@ -227,7 +228,7 @@ class DharpaModule(metaclass=ABCMeta):
 
     def __str__(self):
 
-        return f"module: {self.id}"
+        return f"module '{self.id}'"
 
 
 class EmptyObject(HasTraits):
