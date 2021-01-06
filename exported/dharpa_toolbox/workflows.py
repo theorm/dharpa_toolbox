@@ -176,13 +176,7 @@ class DharpaWorkflow(DharpaModule):
 
     def _create_inputs(self, **config) -> ModuleInputValues:
 
-        print("CREATE WORKFLOW INPUTS")
-
-        class WorkflowModelInputValues(ModuleInputValues):
-            pass
-
-        # inputs = ModuleInputValues()
-        inputs = WorkflowModelInputValues()
+        inputs = ModuleInputValues()
 
         traits = {}
 
