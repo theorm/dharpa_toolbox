@@ -96,7 +96,7 @@ class DharpaWorkflow(DharpaModule):
 
         self._workflow_inputs: Mapping = None
         self._workflow_outputs: Mapping = None
-        self._execution_stages: typing.Iterable[typing.Iterable[str]] = None
+        self._execution_stages: typing.Iterable[typing.Iterable[DharpaModule]] = None
 
         super().__init__(**config)
 
@@ -116,10 +116,33 @@ class DharpaWorkflow(DharpaModule):
 
         self._check_stale()
 
-    def _output_udpated(self, output_name: str, change):
+    def _output_updated(self, source_output: ValueLocation, workflow_output: ValueLocation, change):
 
-        log.debug(f"Workflow output '{output_name}' updated: {change.new}")
-        print(f"Workflow output '{output_name}' updated: {change.new}")
+        log.debug(f"Workflow output '{source_output}' updated: {change.new}")
+        print(f"Workflow output '{source_output}' updated: {change.new}")
+
+        out_edges = self.data_flow_graph.out_edges(source_output)
+
+        print("OUT EDGES")
+        for oe in out_edges:
+            target_module = oe[1].module
+            target_value = oe[1].value_name
+            print(f"{target_module} - {target_value}")
+            target_module.set_input(target_value, change.new)
+
+        if self._state.busy:
+            # means the workflow is currently processing
+            pass
+
+    def set_input(self, input_name: str, value: typing.Any) -> None:
+
+        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        print(self)
+        print(self._state.outputs.trait_names())
+
+        self._state.outputs.set_trait(input_name, value)
+
+
 
 
     def _preprocess_config(self, **config: typing.Any):
@@ -296,7 +319,9 @@ class DharpaWorkflow(DharpaModule):
                 trait = module.outputs.traits().get(output_name)
                 output_trait_name = f"{module_name}__{output_name}"
                 traits[output_trait_name] = copy.deepcopy(trait)
-                update_func = partial(self._output_udpated, output_trait_name)
+                source_output = ValueLocation(module=module, value_name=output_name, type=ValueLocationType.module_output)
+                workflow_output = ValueLocation(module=self, value_name=output_trait_name, type=ValueLocationType.workflow_output)
+                update_func = partial(self._output_updated,  source_output, workflow_output)
                 module.outputs.observe(update_func, names=output_name)
 
         outputs_cls = type(f"WorkflowOutputValues{to_camel_case(self.id, capitalize=True)}", (HasTraits,), traits)
@@ -364,22 +389,24 @@ class DharpaWorkflow(DharpaModule):
             print(f"Executing level: {i+1}")
             for m in modules_to_execute:
                 print(f"Executing: {m}")
-                m.process()
+                with m.outputs.hold_trait_notifications():
+                    m.process()
 
-                for output_name in m.outputs.trait_names():
-                    print(f"Setting output: {output_name}")
-                    value = getattr(m.outputs, output_name)
-                    print(f"Value: {value}")
-                    value_location = ValueLocation(module=m, value_name=output_name, type=ValueLocationType.module_output)
-                    desc = self.data_flow_graph.out_edges(value_location)
-                    print(f"Descendants:")
-                    for d in desc:
-                        target_loc = d[1]
-                        if target_loc.type == ValueLocationType.module_input:
-                            target_module: DharpaModule = target_loc.module
-                            target_value_name: str = target_loc.value_name
-                            target_module.inputs.set_trait(target_value_name, value)
-                            print(f"TARGET: {target_loc}")
+                # for output_name in m.outputs.trait_names():
+                #
+                #     print(f"Setting output: {output_name}")
+                #     value = getattr(m.outputs, output_name)
+                #     print(f"Value: {value}")
+                    # value_location = ValueLocation(module=m, value_name=output_name, type=ValueLocationType.module_output)
+                    # desc = self.data_flow_graph.out_edges(value_location)
+                    # print(f"Descendants:")
+                    # for d in desc:
+                    #     target_loc = d[1]
+                    #     if target_loc.type == ValueLocationType.module_input:
+                    #         target_module: DharpaModule = target_loc.module
+                    #         target_value_name: str = target_loc.value_name
+                    #         target_module.inputs.set_trait(target_value_name, value)
+                    #         print(f"TARGET: {target_loc}")
                 print("-------")
 
             modules_executed.update(modules_to_execute)
@@ -441,6 +468,7 @@ class DharpaWorkflow(DharpaModule):
             result["modules"][module_id] = module.current_state
         result["stale"] = self._state.stale
         return result
+
 
     @property
     def current_structure(self) -> typing.Dict[str, typing.Any]:

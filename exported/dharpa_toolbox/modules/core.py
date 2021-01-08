@@ -137,6 +137,15 @@ class DharpaModule(metaclass=ABCMeta):
 
         return self._state.inputs
 
+    def set_input(self, input_name: str, value: typing.Any) -> None:
+
+        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        print(self)
+        print(self._state.inputs.trait_names())
+
+        self._state.inputs.set_trait(input_name, value)
+
+
     @property
     def outputs(self) -> HasTraits:
 
@@ -184,8 +193,8 @@ class DharpaModule(metaclass=ABCMeta):
                         self.outputs.set_trait(k, v)
                 self._state.stale = False
 
-        except Exception as e:
-            print(e)
+        # except Exception as e:
+        #     raise
         finally:
             self._state.busy = False
 
