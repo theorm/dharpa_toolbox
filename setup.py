@@ -35,7 +35,7 @@ setuptools.setup(
         'Natural Language :: ' + cfg['language'].title(),
     ] + ['Programming Language :: Python :: '+o for o in py_versions[py_versions.index(min_python):]],
     url = cfg['git_url'],
-    packages = ['dharpa_toolbox'],
+    packages = setuptools.find_packages('./exported'),
     package_dir={'': 'exported'},
     include_package_data = True,
     install_requires = requirements,
